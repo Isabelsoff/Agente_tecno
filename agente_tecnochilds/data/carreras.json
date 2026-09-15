@@ -1,0 +1,64 @@
+{
+  "perfiles": [
+    {
+      "id": "cientifico_tecnologico",
+      "nombre": "Científico-Tecnológico",
+      "descripcion": "Personas curiosas, analíticas y lógicas, con interés en entender cómo funcionan las cosas, resolver problemas complejos y trabajar con datos, tecnología o experimentación.",
+      "carreras_sugeridas": [
+        "Ingeniería de Sistemas",
+        "Ingeniería en Inteligencia Artificial",
+        "Física",
+        "Matemáticas",
+        "Ingeniería Electrónica",
+        "Biotecnología",
+        "Ciencia de Datos",
+        "Ingeniería Aeroespacial"
+      ]
+    },
+    {
+      "id": "artistico_creativo",
+      "nombre": "Artístico-Creativo",
+      "descripcion": "Personas imaginativas, sensibles y expresivas, con facilidad para generar ideas originales y comunicar emociones o conceptos a través de distintos lenguajes artísticos.",
+      "carreras_sugeridas": [
+        "Diseño Gráfico",
+        "Arquitectura",
+        "Artes Plásticas",
+        "Diseño de Videojuegos",
+        "Cine y Audiovisuales",
+        "Diseño de Moda",
+        "Música",
+        "Publicidad"
+      ]
+    },
+    {
+      "id": "social_humanistico",
+      "nombre": "Social-Humanístico",
+      "descripcion": "Personas empáticas, comunicativas y comprometidas con el bienestar de otros, interesadas en la cultura, la sociedad, la educación y las relaciones humanas.",
+      "carreras_sugeridas": [
+        "Psicología",
+        "Trabajo Social",
+        "Derecho",
+        "Ciencias Políticas",
+        "Educación",
+        "Comunicación Social",
+        "Sociología",
+        "Relaciones Internacionales"
+      ]
+    },
+    {
+      "id": "practico_tecnico",
+      "nombre": "Práctico-Técnico",
+      "descripcion": "Personas concretas, hábiles manualmente y orientadas a la acción, que disfrutan construir, reparar, organizar procesos y ver resultados tangibles de su trabajo.",
+      "carreras_sugeridas": [
+        "Ingeniería Industrial",
+        "Ingeniería Mecánica",
+        "Técnico en Electricidad",
+        "Gastronomía",
+        "Ingeniería Agronómica",
+        "Administración de Empresas",
+        "Logística",
+        "Ingeniería Civil"
+      ]
+    }
+  ]
+}
