@@ -1,0 +1,25 @@
+# Variables de entorno (contiene la API Key, nunca debe subirse al repo)
+.env
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Cache de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de IDEs / editores
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

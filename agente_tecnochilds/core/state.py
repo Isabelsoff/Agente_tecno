@@ -1,38 +1,79 @@
-import re
-import streamlit as st
+"""
+Esquemas de Pydantic que definen los contratos de entrada y salida
+del endpoint de orientación vocacional.
+"""
 
-ESTUDIANTE_INICIAL = {
-    "nombre": "No registrado",
-    "perfil_vocacional": "No registrado",
-}
+from pydantic import BaseModel, Field, field_validator
 
-def inicializar_estado() -> None:
-    if "estudiante" not in st.session_state:
-        st.session_state.estudiante = ESTUDIANTE_INICIAL.copy()
-    if "mensajes" not in st.session_state:
-        st.session_state.mensajes = []
 
-def actualizar_estado_estudiante(texto: str) -> None:
-    patron_nombre = r"(?:soy|me llamo)\s+([A-Za-zÁÉÍÓÚáéíóúÑñ]+)"
-    coincidencia = re.search(patron_nombre, texto, re.IGNORECASE)
-    if coincidencia:
-        st.session_state.estudiante["nombre"] = coincidencia.group(1).capitalize()
+class PuntajesPerfil(BaseModel):
+    """
+    Puntajes obtenidos por el estudiante en cada uno de los
+    4 perfiles vocacionales de TecnoChilds.
+    Se espera una escala numérica (por ejemplo 0-100 o 0-40,
+    según la ponderación del test del frontend).
+    """
 
-    texto_lower = texto.lower()
-    if "tecnología" in texto_lower or "programación" in texto_lower or "sistemas" in texto_lower:
-        st.session_state.estudiante["perfil_vocacional"] = "Científico-Tecnológico"
-    elif "diseño" in texto_lower or "arte" in texto_lower or "dibujar" in texto_lower:
-        st.session_state.estudiante["perfil_vocacional"] = "Artístico-Creativo"
-    elif "personas" in texto_lower or "enseñar" in texto_lower or "ayudar" in texto_lower:
-        st.session_state.estudiante["perfil_vocacional"] = "Social-Humanístico"
+    cientifico_tecnologico: float = Field(
+        ..., ge=0, description="Puntaje del perfil Científico-Tecnológico"
+    )
+    artistico_creativo: float = Field(
+        ..., ge=0, description="Puntaje del perfil Artístico-Creativo"
+    )
+    social_humanistico: float = Field(
+        ..., ge=0, description="Puntaje del perfil Social-Humanístico"
+    )
+    practico_tecnico: float = Field(
+        ..., ge=0, description="Puntaje del perfil Práctico-Técnico"
+    )
 
-def agregar_mensaje(role: str, content: str) -> None:
-    st.session_state.mensajes.append({"role": role, "content": content})
 
-def obtener_memoria(limite: int = 6) -> str:
-    mensajes = st.session_state.mensajes[-limite:]
-    return "\n".join(f"{m['role']}: {m['content']}" for m in mensajes)
+class TestVocacionalRequest(BaseModel):
+    """
+    Cuerpo de la petición que envía el frontend de TecnoChilds
+    al finalizar el test vocacional.
+    """
 
-def reiniciar_estado() -> None:
-    st.session_state.mensajes = []
-    st.session_state.estudiante = ESTUDIANTE_INICIAL.copy()
+    nombre_estudiante: str = Field(
+        ..., min_length=1, description="Nombre del estudiante que realizó el test"
+    )
+    edad: int | None = Field(
+        default=None, ge=10, le=25, description="Edad del estudiante (opcional)"
+    )
+    puntajes: PuntajesPerfil = Field(
+        ..., description="Puntajes obtenidos en cada perfil vocacional"
+    )
+
+    @field_validator("nombre_estudiante")
+    @classmethod
+    def nombre_no_vacio(cls, valor: str) -> str:
+        if not valor.strip():
+            raise ValueError("El nombre del estudiante no puede estar vacío")
+        return valor.strip()
+
+
+class CarreraSugerida(BaseModel):
+    """Representa una carrera sugerida dentro de la respuesta."""
+
+    nombre: str
+    justificacion: str
+
+
+class OrientacionResponse(BaseModel):
+    """
+    Estructura de la respuesta que el microservicio devuelve al frontend
+    tras procesar el test con el Agente de Orientación Vocacional.
+    """
+
+    perfil_dominante: str = Field(
+        ..., description="Nombre del perfil vocacional con mayor puntaje"
+    )
+    mensaje_motivador: str = Field(
+        ..., description="Mensaje generado por Gemini, en tono motivador para el estudiante"
+    )
+    carreras_recomendadas: list[CarreraSugerida] = Field(
+        ..., description="Listado de carreras recomendadas con su justificación"
+    )
+    resumen_perfiles: dict[str, float] = Field(
+        ..., description="Puntajes normalizados de los 4 perfiles, para graficar en el frontend"
+    )

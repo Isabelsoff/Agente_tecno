@@ -1,62 +1,65 @@
-import streamlit as st
+"""
+Punto de entrada del microservicio Agente Académico de Orientación Vocacional
+de TecnoChilds. Expone un servidor FastAPI en el puerto 5000.
+"""
 
-from config.settings import validar_configuracion
-from core.agent import responder
-from core.state import (
-    actualizar_estado_estudiante,
-    agregar_mensaje,
-    inicializar_estado,
-    obtener_memoria,
-    reiniciar_estado,
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from config.settings import settings
+from core.state import TestVocacionalRequest, OrientacionResponse
+from core.agent import generar_orientacion
+
+app = FastAPI(
+    title="TecnoChilds - Agente Académico de Orientación Vocacional",
+    description="Microservicio que procesa los resultados del test vocacional "
+                 "y devuelve recomendaciones de carreras personalizadas usando Gemini.",
+    version="1.0.0",
 )
 
-st.set_page_config(page_title="TecnoChilds - Agente Vocacional", page_icon="🎓")
+# Middleware de CORS habilitado para que el frontend web pueda
+# consumir este microservicio sin bloqueos del navegador.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-try:
-    validar_configuracion()
-except ValueError as error:
-    st.error(str(error))
-    st.stop()
 
-inicializar_estado()
+@app.get("/")
+def raiz():
+    """Endpoint simple para verificar que el servicio está corriendo."""
+    return {
+        "servicio": "Agente Académico de Orientación Vocacional - TecnoChilds",
+        "estado": "activo",
+    }
 
-st.title("🎓 TecnoChilds")
-st.caption("Orientador Vocacional Inteligente")
 
-with st.sidebar:
-    st.subheader("Perfil del Estudiante")
-    estudiante = st.session_state.estudiante
-    st.write("**Nombre:**", estudiante["nombre"])
-    st.write("**Perfil:**", estudiante["perfil_vocacional"])
-    st.divider()
-    if st.button("Reiniciar conversación"):
-        reiniciar_estado()
-        st.rerun()
-
-for mensaje in st.session_state.mensajes:
-    with st.chat_message(mensaje["role"]):
-        st.markdown(mensaje["content"])
-
-prompt = st.chat_input("Escribe sobre tus gustos o pregunta por carreras...")
-
-if prompt:
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    actualizar_estado_estudiante(prompt)
-    agregar_mensaje("user", prompt)
-
+@app.post("/api/orientar", response_model=OrientacionResponse)
+def orientar_estudiante(request: TestVocacionalRequest):
+    """
+    Recibe los puntajes del test vocacional de un estudiante y devuelve
+    el perfil dominante, un mensaje motivador y carreras recomendadas,
+    generados por el Agente de Orientación Vocacional (Gemini).
+    """
     try:
-        respuesta = responder(
-            mensaje_usuario=prompt,
-            estudiante=st.session_state.estudiante,
-            memoria=obtener_memoria(),
-        )
+        return generar_orientacion(request)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail=str(error))
     except Exception as error:
-        respuesta = f"Ocurrió un error: {error}"
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno al generar la orientación vocacional: {error}",
+        )
 
-    with st.chat_message("assistant"):
-        st.markdown(respuesta)
 
-    agregar_mensaje("assistant", respuesta)
-    st.rerun()
+if __name__ == "__main__":
+    uvicorn.run(
+        "app:app",
+        host=settings.APP_HOST,
+        port=settings.APP_PORT,
+        reload=True,
+    )
