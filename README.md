@@ -5,7 +5,7 @@ Un asistente virtual inteligente diseñado para ayudar a adolescentes y jóvenes
 **Stack Tecnológico:**
 * **Interfaz de Usuario:** Streamlit
 * **Orquestación y Lógica:** LangChain
-* **Modelo de Lenguaje (LLM):** Google Gemini (1.5 Flash/Pro)
+* **Modelo de Lenguaje (LLM):** Google Gemini (3.8 Flash/Pro)
 * **Lenguaje:** Python 3
 
 ---
