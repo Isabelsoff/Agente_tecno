@@ -1,0 +1,21 @@
+[project]
+name = "agente-tecnochilds"
+version = "0.1.0"
+description = "Agente de Orientación Vocacional de TecnoChilds"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph",
+    "langgraph-prebuilt",
+    "langchain-core",
+    "langchain-google-genai",
+    "google-genai",
+    "python-dotenv",
+    "pydantic",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["core", "tools", "config"]

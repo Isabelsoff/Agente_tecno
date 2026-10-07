@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "orientador_vocacional": "./core/graph.py:graph"
+  },
+  "env": ".env"
+}
