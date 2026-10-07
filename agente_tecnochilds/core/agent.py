@@ -12,6 +12,7 @@ from google.genai import types
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.chat_history import BaseChatMessageHistory, InMemoryChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.runnables import RunnableLambda
 from langchain_classic.agents import create_tool_calling_agent, AgentExecutor
 
 from config.settings import settings
@@ -232,9 +233,9 @@ def _inicializar_llm():
 
     Por defecto usa Gemini (langchain_google_genai), para reutilizar la
     GEMINI_API_KEY que ya tienes configurada en config/settings.py y .env.
-    Si prefieres usar OpenAI o Anthropic como pide el enunciado, esta es la
-    ÚNICA función que necesitas cambiar; el resto del agente (prompt, tools,
-    memoria) queda igual. Ejemplos equivalentes:
+    Si prefieres usar OpenAI o Anthropic, esta es la ÚNICA función que
+    necesitas cambiar; el resto del agente (prompt, tools, memoria) queda
+    igual. Ejemplos equivalentes:
 
         # OpenAI (requiere `pip install langchain-openai` y OPENAI_API_KEY):
         # from langchain_openai import ChatOpenAI
@@ -317,21 +318,67 @@ def obtener_historial(session_id: str) -> BaseChatMessageHistory:
     return _HISTORIALES_SESION[session_id]
 
 
+def _normalizar_salida_agente(resultado: dict) -> dict:
+    """
+    Normaliza resultado["output"] a texto plano ANTES de que
+    RunnableWithMessageHistory lo guarde en el historial de la sesión.
+
+    Si esto no se hace aquí, la lista cruda de bloques de contenido de
+    Gemini 3 (con su "signature" de razonamiento) queda guardada en la
+    memoria de la conversación, y revienta en el siguiente turno al
+    reenviarla como contexto ("Message dict must contain 'role' and
+    'content' keys...").
+    """
+    resultado = dict(resultado)
+    resultado["output"] = _extraer_texto(resultado["output"])
+    return resultado
+
+
 def construir_agente_con_memoria() -> RunnableWithMessageHistory:
     """
     Envuelve el AgentExecutor con RunnableWithMessageHistory: la solución
     de memoria recomendada actualmente en LangChain (reemplaza a las clases
     ConversationBufferMemory, ya deprecadas). Con esto, cada llamada queda
     asociada a un session_id y el historial se lee/actualiza automáticamente.
+
+    El AgentExecutor se encadena primero con _normalizar_salida_agente para
+    que lo que se guarde en el historial ya sea texto plano, no la salida
+    cruda del modelo.
     """
     agent_executor = construir_agent_executor()
+    agente_normalizado = agent_executor | RunnableLambda(_normalizar_salida_agente)
 
     return RunnableWithMessageHistory(
-        agent_executor,
+        agente_normalizado,
         obtener_historial,
         input_messages_key="input",
         history_messages_key="chat_history",
     )
+
+
+def _extraer_texto(salida) -> str:
+    """
+    Normaliza la salida del agente a texto plano.
+
+    Algunos modelos (como Gemini 3) devuelven la respuesta final como una
+    lista de bloques de contenido, ej:
+    [{"type": "text", "text": "...", "extras": {"signature": "..."}}]
+    en vez de un simple string. Esta función extrae y concatena solo el
+    texto de esos bloques, descartando firmas y demás metadata interna.
+    """
+    if isinstance(salida, str):
+        return salida
+
+    if isinstance(salida, list):
+        partes = []
+        for bloque in salida:
+            if isinstance(bloque, dict):
+                partes.append(bloque.get("text", ""))
+            elif isinstance(bloque, str):
+                partes.append(bloque)
+        return "".join(partes).strip()
+
+    return str(salida)
 
 
 def conversar(session_id: str, mensaje: str) -> str:
@@ -354,4 +401,4 @@ def conversar(session_id: str, mensaje: str) -> str:
     )
 
     # AgentExecutor siempre devuelve un dict con la clave "output"
-    return resultado["output"]
+    return _extraer_texto(resultado["output"])
