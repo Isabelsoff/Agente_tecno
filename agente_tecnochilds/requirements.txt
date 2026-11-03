@@ -4,11 +4,11 @@ google-genai
 python-dotenv
 pydantic
 langchain
-langchain-classic 
+langchain-classic
 langchain-core
 langchain-google-genai
 streamlit
 langgraph
 langgraph-checkpoint
 pytest
- langchain-tavily
+langchain-tavily
