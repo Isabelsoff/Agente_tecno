@@ -1,0 +1,50 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.3, pytest-9.2.0, pluggy-1.7.0 -- C:\Python314\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\ASUS\OneDrive\Documentos\GitHub\Agente_tecno\agente_tecnochilds
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.14.2, langsmith-0.14.1
+collecting ... collected 20 items
+
+tests/test_errores.py::test_clasificacion_y_registro_de_errores[429 RESOURCE_EXHAUSTED-429] PASSED [  5%]
+tests/test_errores.py::test_clasificacion_y_registro_de_errores[504 DEADLINE_EXCEEDED-504] PASSED [ 10%]
+tests/test_esquema.py::test_esquema_valido_normaliza_a_claves_fijas PASSED [ 15%]
+tests/test_esquema.py::test_resumen_incompleto_rellena_claves_y_datos_requeridos_fallan PASSED [ 20%]
+tests/test_grafo.py::test_grafo_recorrido_agente_herramientas_agente PASSED [ 25%]
+tests/test_integracion_real.py::test_integracion_real_gemini_solo_con_opt_in_explicito SKIPPED [ 30%]
+tests/test_memoria.py::test_memoria_conserva_mensajes_por_thread_y_separa_threads PASSED [ 35%]
+tests/test_metricas.py::test_callback_cuenta_llamadas_tokens_herramientas_errores_y_jsonl PASSED [ 40%]
+tests/test_modelo_lazy.py::test_importar_grafo_no_requiere_api_key PASSED [ 45%]
+tests/test_rutas.py::test_decidir_ruta_para_ruta_conceptual_herramientas_y_none PASSED [ 50%]
+tests/test_rutas.py::test_evaluar_herramientas_con_y_sin_tool_calls PASSED [ 55%]
+tests/test_rutas.py::test_start_tiene_arista_condicional_hacia_agente_y_enrutador PASSED [ 60%]
+tests/test_texto.py::test_bloques_de_texto_separados_por_espacio PASSED  [ 65%]
+tests/test_texto.py::test_string_simple_se_conserva PASSED               [ 70%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[cientifico_tecnologico-cientifico_tecnologico] PASSED [ 75%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[artistico_creativo-artistico_creativo] PASSED [ 80%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[social_humanistico-social_humanistico] PASSED [ 85%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[practico_tecnico-practico_tecnico] PASSED [ 90%]
+tests/test_tool.py::test_perfil_invalido_y_vacio_devuelven_json[perfil inexistente] PASSED [ 95%]
+tests/test_tool.py::test_perfil_invalido_y_vacio_devuelven_json[] PASSED [100%]
+
+============================== warnings summary ===============================
+..\..\..\..\..\AppData\Roaming\Python\Python314\site-packages\anyio\pytest_plugin.py:14
+  C:\Users\ASUS\AppData\Roaming\Python\Python314\site-packages\anyio\pytest_plugin.py:14: PytestRemovedIn10Warning: _pytest.python.CallSpec2 has been renamed to CallSpec.
+  The CallSpec2 alias will be removed in pytest 10.
+  Update imports to use CallSpec instead.
+  See https://docs.pytest.org/en/stable/deprecations.html#callspec2-renamed
+    from _pytest.python import CallSpec2
+
+..\..\..\..\..\AppData\Roaming\Python\Python314\site-packages\langsmith\_internal\_beta_decorator.py:70: 13 warnings
+  C:\Users\ASUS\AppData\Roaming\Python\Python314\site-packages\langsmith\_internal\_beta_decorator.py:70: DeprecationWarning: 'asyncio.iscoroutinefunction' is deprecated and slated for removal in Python 3.16; use inspect.iscoroutinefunction() instead
+    if asyncio.iscoroutinefunction(func):
+
+..\..\..\..\..\AppData\Roaming\Python\Python314\site-packages\google\genai\types.py:42
+  C:\Users\ASUS\AppData\Roaming\Python\Python314\site-packages\google\genai\types.py:42: DeprecationWarning: '_UnionGenericAlias' is deprecated and slated for removal in Python 3.17
+    VersionedUnionType = Union[builtin_types.UnionType, _UnionGenericAlias]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_integracion_real.py:8: La integración real requiere RUN_LIVE=1 y consume cuota de Gemini.
+================= 19 passed, 1 skipped, 15 warnings in 2.31s ==================

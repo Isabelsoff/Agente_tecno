@@ -1,3 +1,5 @@
+from typing import Literal
+
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -11,7 +13,14 @@ from core.graph import (
 
 # --- Funciones de Decisión (Rutas condicionales) ---
 
-def decidir_ruta(state: VocacionalState) -> str:
+def decidir_inicio(state: VocacionalState) -> Literal["ir_agente", "ir_enrutador"]:
+    """Omite el enrutador cuando la ruta ya está definida como herramientas."""
+    if state.get("ruta") == "herramientas":
+        return "ir_agente"
+    return "ir_enrutador"
+
+
+def decidir_ruta(state: VocacionalState) -> Literal["ir_conceptual", "ir_agente"]:
     """Decide hacia dónde ir después del enrutador."""
     if state.get("ruta") == "conceptual":
         return "ir_conceptual"
@@ -37,7 +46,14 @@ builder.add_node("agente", agente_vocacional_node)
 builder.add_node("herramientas", herramientas_node)
 
 # 3. Definir el Flujo (las "flechas")
-builder.add_edge(START, "enrutador")
+builder.add_conditional_edges(
+    START,
+    decidir_inicio,
+    {
+        "ir_agente": "agente",
+        "ir_enrutador": "enrutador",
+    },
+)
 
 # Del enrutador, tomamos una decisión condicional
 builder.add_conditional_edges(

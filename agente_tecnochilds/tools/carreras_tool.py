@@ -77,7 +77,7 @@ def _normalizar_texto(texto: str) -> str:
 
 
 @tool
-def consultar_perfil_vocacional(consulta: str) -> dict:
+def consultar_perfil_vocacional(consulta: str) -> str:
     """
     Consulta la base de datos de perfiles vocacionales de TecnoChilds
     (data/carreras.json) por id o por nombre de perfil, y devuelve sus
@@ -95,7 +95,7 @@ def consultar_perfil_vocacional(consulta: str) -> dict:
             No distingue mayúsculas/minúsculas ni tildes.
 
     Returns:
-        dict con tres claves:
+        JSON como string con tres claves:
         - "encontrado" (bool): True si se halló un perfil que coincide
           con la consulta.
         - "perfil" (dict | None): si se encontró, contiene
@@ -106,65 +106,70 @@ def consultar_perfil_vocacional(consulta: str) -> dict:
           Cuando no se encuentra el perfil, incluye los ids disponibles
           para que el agente pueda reintentar con un valor válido.
     """
+    def resultado(encontrado: bool, perfil: dict | None, mensaje: str) -> str:
+        return json.dumps(
+            {"encontrado": encontrado, "perfil": perfil, "mensaje": mensaje},
+            ensure_ascii=False,
+        )
+
+    if not isinstance(consulta, str):
+        return resultado(False, None, "Error: la consulta debe ser texto.")
+
     try:
         datos = cargar_carreras()
-        perfiles = datos.get("perfiles", [])
-
-        if not perfiles:
-            return {
-                "encontrado": False,
-                "perfil": None,
-                "mensaje": "Error: el archivo data/carreras.json no contiene perfiles.",
-            }
-
-        consulta_normalizada = _normalizar_texto(consulta)
-
-        for perfil in perfiles:
-            id_normalizado = _normalizar_texto(perfil.get("id", ""))
-            nombre_normalizado = _normalizar_texto(perfil.get("nombre", ""))
-
-            coincide = (
-                consulta_normalizada == id_normalizado
-                or consulta_normalizada in nombre_normalizado
-            )
-            if coincide:
-                return {
-                    "encontrado": True,
-                    "perfil": perfil,
-                    "mensaje": f"Perfil '{perfil.get('nombre')}' encontrado correctamente.",
-                }
-
-        ids_disponibles = ", ".join(p.get("id", "") for p in perfiles)
-        return {
-            "encontrado": False,
-            "perfil": None,
-            "mensaje": (
-                f"No se encontró ningún perfil vocacional que coincida con '{consulta}'. "
-                f"Los perfiles disponibles son: {ids_disponibles}."
-            ),
-        }
-
     except FileNotFoundError:
-        return {
-            "encontrado": False,
-            "perfil": None,
-            "mensaje": f"Error: no se encontró el archivo de datos en {_RUTA_CARRERAS}.",
-        }
+        return resultado(
+            False, None, f"Error: no se encontró el archivo de datos en {_RUTA_CARRERAS}."
+        )
+    except (OSError, UnicodeError):
+        return resultado(False, None, "Error: no se pudo leer el archivo de carreras.")
     except json.JSONDecodeError:
-        return {
-            "encontrado": False,
-            "perfil": None,
-            "mensaje": "Error: el archivo data/carreras.json tiene un formato JSON inválido.",
-        }
-    except KeyError as error:
-        return {
-            "encontrado": False,
-            "perfil": None,
-            "mensaje": f"Error: falta el campo {error} en uno de los perfiles del JSON.",
-        }
-    except Exception as error:
-        return {
-            "encontrado": False,
-            "perfil": None,
-            "mensaje": f"Error inesperado al consultar el perfil vocacional: {error}",
-        }
+        return resultado(
+            False, None, "Error: el archivo data/carreras.json tiene un formato JSON inválido."
+        )
+
+    if not isinstance(datos, dict):
+        return resultado(False, None, "Error: el archivo de carreras no tiene una estructura válida.")
+
+    perfiles = datos.get("perfiles")
+    if not isinstance(perfiles, list) or not perfiles:
+        return resultado(
+            False, None, "Error: el archivo data/carreras.json no contiene perfiles."
+        )
+
+    consulta_normalizada = _normalizar_texto(consulta)
+    if not consulta_normalizada:
+        ids_disponibles = ", ".join(str(perfil.get("id", "")) for perfil in perfiles)
+        return resultado(
+            False,
+            None,
+            f"La consulta está vacía. Los perfiles disponibles son: {ids_disponibles}.",
+        )
+
+    for perfil in perfiles:
+        if not isinstance(perfil, dict):
+            return resultado(
+                False, None, "Error: el archivo de carreras contiene un perfil inválido."
+            )
+
+        id_normalizado = _normalizar_texto(str(perfil.get("id", "")))
+        nombre_normalizado = _normalizar_texto(str(perfil.get("nombre", "")))
+        if (
+            consulta_normalizada == id_normalizado
+            or consulta_normalizada in nombre_normalizado
+        ):
+            return resultado(
+                True,
+                perfil,
+                f"Perfil '{perfil.get('nombre')}' encontrado correctamente.",
+            )
+
+    ids_disponibles = ", ".join(str(perfil.get("id", "")) for perfil in perfiles)
+    return resultado(
+        False,
+        None,
+        (
+            f"No se encontró ningún perfil vocacional que coincida con '{consulta}'. "
+            f"Los perfiles disponibles son: {ids_disponibles}."
+        ),
+    )

@@ -10,3 +10,4 @@ langchain-google-genai
 streamlit
 langgraph
 langgraph-checkpoint
+pytest

@@ -1,158 +1,61 @@
-# Agente Académico de Orientación Vocacional - TecnoChilds
+# Agente de Orientación Vocacional - TecnoChilds
 
-Microservicio en **Python + FastAPI** que utiliza el modelo **Gemini** (SDK `google-genai`)
-para procesar los resultados del test vocacional de TecnoChilds y devolver
-recomendaciones de carreras personalizadas para cada estudiante.
+Aplicación de orientación vocacional con Streamlit, LangGraph, LangChain y Gemini.
+El grafo usa una herramienta local respaldada por `data/carreras.json`, un
+checkpointer en memoria para el chat de seguimiento y callbacks que registran
+métricas por ejecución.
 
-## Estructura del proyecto
+## Requisitos e instalación
 
-```
-agente_tecnochilds/
-├── app.py                  # Servidor FastAPI (puerto 5000)
-├── config/
-│   └── settings.py         # Carga de variables de entorno (.env)
-├── core/
-│   ├── agent.py            # Lógica de interacción con Gemini
-│   └── state.py            # Esquemas Pydantic (request/response)
-├── tools/
-│   └── carreras_tool.py    # Carga de data/carreras.json
-├── data/
-│   └── carreras.json       # 4 perfiles vocacionales y carreras sugeridas
-├── .env                    # Variables de entorno (NO subir al repo)
-├── .gitignore
-├── requirements.txt
-└── README.md
+Se requiere Python 3.11 o superior.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
-## Requisitos previos
+## Configuración
 
-- Python 3.10 o superior
-- Una API Key de Gemini (Google AI Studio): https://aistudio.google.com/app/apikey
+Crea `.env` en la raíz del proyecto. No compartas ni subas credenciales reales:
 
-## Instrucciones de instalación y ejecución
-
-### 1. Ubicarse en la carpeta del proyecto
-
-```bash
-cd agente_tecnochilds
+```dotenv
+GEMINI_API_KEY=REEMPLAZAR_POR_TU_CLAVE
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
-### 2. Crear y activar un entorno virtual (recomendado)
+`config/settings.py` carga el archivo antes de leer las variables. Las pruebas
+automáticas usan un modelo falso y no requieren una clave ni consumen cuota.
 
-En Linux / macOS:
-```bash
-python3 -m venv venv
-source venv/bin/activate
+## Ejecutar la aplicación
+
+Desde la carpeta del proyecto:
+
+```powershell
+python -m streamlit run app.py
 ```
 
-En Windows:
-```bash
-python -m venv venv
-venv\Scripts\activate
+El botón **Nueva consulta** crea una conversación nueva. Las preguntas de
+seguimiento reutilizan el mismo `thread_id` para conservar memoria.
+
+## Pruebas automáticas
+
+```powershell
+python -m pytest -v
 ```
 
-### 3. Instalar las dependencias
+La suite simula el modelo; la prueba en vivo se omite de forma predeterminada.
+Solo opta por ella expresamente con `RUN_LIVE=1` si deseas consumir cuota.
 
-```bash
-pip install -r requirements.txt
+La salida de referencia está en [docs/evidencias/pytest_salida.txt](docs/evidencias/pytest_salida.txt)
+y el informe de resultados en [docs/PRUEBAS.md](docs/PRUEBAS.md).
+
+## Métricas
+
+Las ejecuciones se agregan en `logs/metricas.jsonl`. Para regenerar el resumen:
+
+```powershell
+python scripts/resumen_metricas.py
 ```
 
-### 4. Configurar la API Key de Gemini
-
-Abre el archivo `.env` y reemplaza el valor de ejemplo por tu clave real:
-
-```
-GEMINI_API_KEY=tu_clave_de_api_de_gemini_aqui
-```
-
-### 5. Levantar el servidor
-
-```bash
-python app.py
-```
-
-O, de forma equivalente, usando uvicorn directamente:
-
-```bash
-uvicorn app:app --host 0.0.0.0 --port 5000 --reload
-```
-
-El servicio quedará disponible en:
-
-```
-http://localhost:5000
-```
-
-Documentación interactiva (Swagger UI) generada automáticamente por FastAPI:
-
-```
-http://localhost:5000/docs
-```
-
-## Endpoint principal
-
-### `POST /api/orientar`
-
-Recibe los puntajes del test vocacional del estudiante y devuelve
-el perfil dominante, un mensaje motivador y carreras recomendadas.
-
-**Ejemplo de body (JSON):**
-
-```json
-{
-  "nombre_estudiante": "Valentina",
-  "edad": 16,
-  "puntajes": {
-    "cientifico_tecnologico": 32,
-    "artistico_creativo": 18,
-    "social_humanistico": 20,
-    "practico_tecnico": 15
-  }
-}
-```
-
-**Ejemplo de respuesta:**
-
-```json
-{
-  "perfil_dominante": "Científico-Tecnológico",
-  "mensaje_motivador": "Valentina, tu curiosidad y pensamiento lógico son un gran motor...",
-  "carreras_recomendadas": [
-    {
-      "nombre": "Ingeniería en Inteligencia Artificial",
-      "justificacion": "Tu perfil analítico encaja con el diseño de sistemas inteligentes."
-    }
-  ],
-  "resumen_perfiles": {
-    "cientifico_tecnologico": 32,
-    "artistico_creativo": 18,
-    "social_humanistico": 20,
-    "practico_tecnico": 15
-  }
-}
-```
-
-### Probar el endpoint con `curl`
-
-```bash
-curl -X POST http://localhost:5000/api/orientar \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombre_estudiante": "Valentina",
-    "edad": 16,
-    "puntajes": {
-      "cientifico_tecnologico": 32,
-      "artistico_creativo": 18,
-      "social_humanistico": 20,
-      "practico_tecnico": 15
-    }
-  }'
-```
-
-## Notas
-
-- El archivo `.env` está excluido del control de versiones mediante `.gitignore`;
-  nunca subas tu API Key real a un repositorio público.
-- Este microservicio es independiente del backend actual de TecnoChilds
-  (Node.js + Express); puede correr en paralelo, en el puerto `5000`,
-  y ser consumido por el frontend como un servicio adicional de IA.
+Consulta el reporte en [docs/resumen_metricas.md](docs/resumen_metricas.md).
