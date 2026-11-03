@@ -16,15 +16,15 @@ Solo considera relevantes resultados que correspondan a la carrera pedida. Si so
 relevantes, responde con institución, programa, descripción y fuente_url. Si
 estado_verificacion indica fuente secundaria o dato desactualizado, adviértelo y
 sugiere confirmar en el sitio oficial.
-Si los resultados corresponden a otras carreras o no hay resultados relevantes,
-trátalos como "sin resultados": no los presentes como respuesta. Responde bajo el
-rótulo exacto "Información general (no verificada)". En esa sección puedes mencionar
-solo instituciones muy conocidas de la ciudad que, según tu conocimiento general,
-suelen ofrecer esa carrera; di expresamente que no están en tu base verificada y que
-se debe confirmar en sus sitios oficiales. Está PROHIBIDO dar costos, duración,
-acreditaciones, requisitos de admisión, fechas o cualquier detalle específico del
-programa. Si no conoces instituciones con certeza, dilo y sugiere consultar los
-sitios oficiales. No inventes instituciones ni programas.
+Si el índice no devuelve resultados o estos no corresponden a la carrera o ciudad,
+DEBES llamar a buscar_programas_web antes de responder. Está prohibido contestar
+solo con conocimiento propio sin haber usado esa herramienta. Con resultados web,
+responde bajo el encabezado exacto "Información encontrada en la web", indicando
+universidad, programa y URL de la fuente; prioriza dominios oficiales de universidades.
+No presentes resultados web que no correspondan a la carrera o ciudad solicitadas.
+Si ambas herramientas no devuelven resultados, dilo claramente y no inventes
+instituciones ni programas. Si la búsqueda web falla, informa que no fue posible
+verificar resultados y no afirmes datos obtenidos de la web.
 Responde de forma directa y útil, sin empezar con disculpas largas.
 Para otras preguntas generales, responde de forma inspiradora.
 """.strip()
@@ -40,14 +40,14 @@ Solo considera relevantes resultados que correspondan a la carrera pedida. Si so
 relevantes, responde con institución, programa, descripción y fuente_url. Si
 estado_verificacion indica fuente secundaria o dato desactualizado, adviértelo y
 sugiere confirmar en el sitio oficial.
-Si los resultados corresponden a otras carreras o no hay resultados relevantes,
-trátalos como "sin resultados": no los presentes como respuesta. Responde bajo el
-rótulo exacto "Información general (no verificada)". En esa sección puedes mencionar
-solo instituciones muy conocidas de la ciudad que, según tu conocimiento general,
-suelen ofrecer esa carrera; di expresamente que no están en tu base verificada y que
-se debe confirmar en sus sitios oficiales. Está PROHIBIDO dar costos, duración,
-acreditaciones, requisitos de admisión, fechas o cualquier detalle específico del
-programa. Si no conoces instituciones con certeza, dilo y sugiere consultar los
-sitios oficiales. No inventes instituciones ni programas.
+Si el índice no devuelve resultados o estos no corresponden a la carrera o ciudad,
+DEBES llamar a buscar_programas_web antes de responder. Está prohibido contestar
+solo con conocimiento propio sin haber usado esa herramienta. Con resultados web,
+responde bajo el encabezado exacto "Información encontrada en la web", indicando
+universidad, programa y URL de la fuente; prioriza dominios oficiales de universidades.
+No presentes resultados web que no correspondan a la carrera o ciudad solicitadas.
+Si ambas herramientas no devuelven resultados, dilo claramente y no inventes
+instituciones ni programas. Si la búsqueda web falla, informa que no fue posible
+verificar resultados y no afirmes datos obtenidos de la web.
 Responde de forma directa y útil, sin empezar con disculpas largas.
 """.strip()

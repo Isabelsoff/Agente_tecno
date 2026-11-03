@@ -4,7 +4,6 @@ from pathlib import Path
 import streamlit as st
 from langchain_core.messages import HumanMessage
 
-from config.settings import GEMINI_API_KEY, GEMINI_MODEL
 from core.agent import app_vocacional
 from core.errores import clasificar_error_modelo
 from core.graph import extraer_texto_respuesta, generar_respuesta_api
@@ -19,44 +18,6 @@ st.set_page_config(
     page_icon="🎓",
     layout="centered",
 )
-
-# --- DIAGNOSTICO TEMPORAL (borrar despues de probar) ---
-import sys
-import urllib.error
-import urllib.request
-from importlib import metadata as _md
-
-
-def _version(paquete: str) -> str:
-    try:
-        return _md.version(paquete)
-    except Exception:
-        return "no instalado"
-
-
-def _probar_clave_rest() -> str:
-    """Llama directo a la API de Gemini, sin librerias, para aislar el problema."""
-    req = urllib.request.Request(
-        "https://generativelanguage.googleapis.com/v1beta/models",
-        headers={"x-goog-api-key": GEMINI_API_KEY or ""},
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=20) as r:
-            return f"{r.status} OK (la clave funciona)"
-    except urllib.error.HTTPError as e:
-        return f"{e.code} {e.read().decode(errors='ignore')[:120]}"
-    except Exception as e:
-        return f"error de red: {e}"
-
-
-st.sidebar.write("Python:", sys.version.split()[0])
-st.sidebar.write("langchain-google-genai:", _version("langchain-google-genai"))
-st.sidebar.write("google-genai:", _version("google-genai"))
-st.sidebar.write("Largo clave:", len(GEMINI_API_KEY or ""))
-st.sidebar.write("Prefijo:", (GEMINI_API_KEY or "")[:3])
-st.sidebar.write("Modelo:", GEMINI_MODEL)
-st.sidebar.write("Prueba REST directa:", _probar_clave_rest())
-# --------------------------------------------------------
 
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = str(uuid.uuid4())

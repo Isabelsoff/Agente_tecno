@@ -80,7 +80,7 @@ def test_construir_y_cargar_indice_con_archivos_temporales(rag_temporal: dict) -
 def test_recuperar_devuelve_cinco_resultados_con_puntaje(rag_temporal: dict) -> None:
     rag.construir_indice()
 
-    resultados = rag.recuperar("programa de prueba")
+    resultados = rag.recuperar("programa de prueba", min_similarity=-1.0)
 
     assert len(resultados) == 5
     for resultado in resultados:
@@ -89,7 +89,10 @@ def test_recuperar_devuelve_cinco_resultados_con_puntaje(rag_temporal: dict) -> 
         assert isinstance(resultado["puntaje"], float)
 
 
-def test_tool_con_indice_presente_devuelve_datos_citados(rag_temporal: dict) -> None:
+def test_tool_con_indice_presente_devuelve_datos_citados(
+    rag_temporal: dict, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(rag, "MIN_SIMILARITY", -1.0)
     rag.construir_indice()
 
     respuesta = json.loads(
@@ -157,8 +160,28 @@ def test_agente_simulado_invoca_tool_rag_y_metricas_la_registran(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     from core import metrics
+    from tools import programas_tool
 
     fake_chat_model.tool_name = "buscar_programas_academicos"
+    monkeypatch.setattr(
+        programas_tool,
+        "recuperar",
+        lambda *_args, **_kwargs: [
+            {
+                "texto": "Programa de prueba",
+                "metadatos": {
+                    "institucion": "Institución de prueba",
+                    "programa": "Programa de prueba",
+                    "ciudad": "Ciudad de prueba",
+                    "descripcion": "Resultado simulado para la prueba.",
+                    "fuente_url": "https://example.org/programa",
+                    "fecha_verificacion": "2026-01-01",
+                    "estado_verificacion": "fuente oficial simulada",
+                },
+                "puntaje": 1.0,
+            }
+        ],
+    )
     monkeypatch.setattr(metrics, "_METRICS_PATH", tmp_path / "metricas.jsonl")
     callback = MetricasCallback("thread-rag-tool", "pregunta sobre programas")
     resultado = app_vocacional.invoke(
@@ -183,12 +206,63 @@ def test_agente_simulado_invoca_tool_rag_y_metricas_la_registran(
     )
 
 
-def test_prompts_definen_relevancia_y_respaldo_no_verificado() -> None:
+def test_prompts_exigen_fallback_web_si_rag_no_es_relevante() -> None:
     for prompt in (AGENT_SYSTEM_TEMPLATE, CONCEPTUAL_SYSTEM_PROMPT):
         prompt_lower = prompt.lower()
         assert "buscar_programas_academicos" in prompt_lower
+        assert "buscar_programas_web" in prompt_lower
         assert "institución, programa, descripción y fuente_url" in prompt_lower
         assert "correspondan a la carrera pedida" in prompt_lower
-        assert "información general (no verificada)" in prompt_lower
-        assert "no están en tu base verificada" in prompt_lower
-        assert "está prohibido dar costos" in prompt_lower
+        assert "debes llamar a buscar_programas_web" in prompt_lower
+        assert "información encontrada en la web" in prompt_lower
+        assert "ambas herramientas no devuelven resultados" in prompt_lower
+
+
+def test_flujo_sin_resultados_rag_invoca_web_simulada(
+    fake_chat_model,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from core import metrics
+    from tools import programas_tool, web_tool
+
+    class FakeTavily:
+        def __init__(self, **_: object) -> None:
+            pass
+
+        def invoke(self, _: dict[str, str]) -> dict[str, list[dict[str, str]]]:
+            return {
+                "results": [
+                    {
+                        "title": "Universidad simulada",
+                        "url": "https://example.org/programa",
+                        "content": "Programa de Ciencia de Datos en Medellín.",
+                    }
+                ]
+            }
+
+    fake_chat_model.tool_name = "buscar_programas_academicos"
+    monkeypatch.setattr(programas_tool, "recuperar", lambda *_args, **_kwargs: [])
+    monkeypatch.setattr(web_tool, "TavilySearch", FakeTavily)
+    monkeypatch.setattr(metrics, "_METRICS_PATH", tmp_path / "metricas.jsonl")
+    callback = MetricasCallback("thread-fallback-web", "dónde estudiar ciencia de datos")
+
+    resultado = app_vocacional.invoke(
+        {
+            "messages": [
+                HumanMessage(content="¿Dónde estudiar ciencia de datos en Medellín?")
+            ],
+            "ruta": "herramientas",
+        },
+        config={
+            "configurable": {"thread_id": "thread-fallback-web"},
+            "callbacks": [callback],
+        },
+    )
+    registro = callback.finish("ok")
+
+    assert "Información encontrada en la web" in resultado["messages"][-1].content
+    assert [item["nombre"] for item in registro["metricas"]["herramientas"]] == [
+        "buscar_programas_academicos",
+        "buscar_programas_web",
+    ]

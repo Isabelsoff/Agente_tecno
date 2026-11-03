@@ -36,7 +36,12 @@ def buscar_programas_academicos(consulta: str) -> str:
         )
 
     if not isinstance(consulta, str) or not consulta.strip():
-        return respuesta(False, [], "La consulta está vacía.")
+        return respuesta(
+            False,
+            [],
+            "SIN_RESULTADOS_EN_BASE. La consulta está vacía; indica la carrera y "
+            "la ciudad antes de buscar en la web.",
+        )
 
     try:
         fragmentos = recuperar(consulta, k=5)
@@ -44,14 +49,15 @@ def buscar_programas_academicos(consulta: str) -> str:
         return respuesta(
             False,
             [],
-            "El índice académico aún no existe. Solicita que se construya "
-            "con scripts/construir_indice.py.",
+            "SIN_RESULTADOS_EN_BASE. El índice académico aún no existe. Usa la "
+            "herramienta buscar_programas_web para esta consulta.",
         )
-    except (OSError, ValueError, RuntimeError) as error:
+    except (OSError, ValueError, RuntimeError):
         return respuesta(
             False,
             [],
-            f"No se pudo consultar el índice académico: {error}",
+            "SIN_RESULTADOS_EN_BASE. No se pudo consultar el índice académico. "
+            "Usa la herramienta buscar_programas_web para esta consulta.",
         )
 
     resultados = [
@@ -72,8 +78,8 @@ def buscar_programas_academicos(consulta: str) -> str:
         return respuesta(
             False,
             [],
-            "No hay datos verificados que coincidan. Consulta los sitios oficiales "
-            "de las instituciones para confirmar la oferta vigente.",
+            "SIN_RESULTADOS_EN_BASE. No hay resultados relevantes en la base. "
+            "Usa la herramienta buscar_programas_web para esta consulta.",
         )
     return respuesta(
         True,

@@ -21,20 +21,40 @@ class FakeToolBoundModel:
         self.tool_name = tool_name
 
     def invoke(self, messages: list[Any]) -> AIMessage:
-        if any(isinstance(message, ToolMessage) for message in messages):
+        tool_messages = [
+            message for message in messages if isinstance(message, ToolMessage)
+        ]
+        if self.tool_name == "buscar_programas_academicos":
+            if not tool_messages:
+                return self._tool_call("buscar_programas_academicos")
+            ultima_herramienta = tool_messages[-1]
+            if (
+                ultima_herramienta.name == "buscar_programas_academicos"
+                and "SIN_RESULTADOS_EN_BASE" in str(ultima_herramienta.content)
+            ):
+                return self._tool_call("buscar_programas_web")
+            if ultima_herramienta.name == "buscar_programas_web":
+                return AIMessage(
+                    content="Información encontrada en la web: Universidad simulada."
+                )
+        if tool_messages:
             return AIMessage(content="Respuesta final simulada con datos de herramienta.")
         consulta = (
             "programas universitarios"
             if self.tool_name == "buscar_programas_academicos"
             else "practico_tecnico"
         )
+        return self._tool_call(self.tool_name, consulta)
+
+    @staticmethod
+    def _tool_call(tool_name: str, consulta: str = "programas universitarios") -> AIMessage:
         return AIMessage(
             content="",
             tool_calls=[
                 {
-                    "name": self.tool_name,
+                    "name": tool_name,
                     "args": {"consulta": consulta},
-                    "id": "test-call-1",
+                    "id": f"test-call-{tool_name}",
                     "type": "tool_call",
                 }
             ],

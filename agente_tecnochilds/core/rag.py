@@ -1,4 +1,5 @@
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,7 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PROGRAMAS_PATH = _PROJECT_ROOT / "data" / "conocimiento" / "programas.jsonl"
 INDEX_PATH = _PROJECT_ROOT / "data" / "indice" / "indice.json"
 EMBEDDING_MODEL = "gemini-embedding-001"
+MIN_SIMILARITY = float(os.getenv("RAG_MIN_SIMILARITY", "0.35"))
 
 _embeddings: Embeddings | None = None
 
@@ -90,11 +92,17 @@ def cargar_indice() -> InMemoryVectorStore:
     )
 
 
-def recuperar(consulta: str, k: int = 5) -> list[dict[str, Any]]:
+def recuperar(
+    consulta: str,
+    k: int = 5,
+    min_similarity: float | None = None,
+) -> list[dict[str, Any]]:
     if not isinstance(consulta, str) or not consulta.strip():
         return []
     if k <= 0:
         return []
+    if min_similarity is None:
+        min_similarity = MIN_SIMILARITY
 
     coincidencias = cargar_indice().similarity_search_with_score(
         consulta.strip(),
@@ -107,4 +115,5 @@ def recuperar(consulta: str, k: int = 5) -> list[dict[str, Any]]:
             "puntaje": float(puntaje),
         }
         for documento, puntaje in coincidencias
+        if float(puntaje) >= min_similarity
     ]
