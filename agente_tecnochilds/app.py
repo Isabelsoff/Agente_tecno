@@ -1,4 +1,8 @@
 import uuid
+from config.settings import GEMINI_API_KEY, GEMINI_MODEL
+st.sidebar.write("Largo clave:", len(GEMINI_API_KEY))
+st.sidebar.write("Empieza con AIza:", GEMINI_API_KEY.startswith("AIza"))
+st.sidebar.write("Modelo:", GEMINI_MODEL)
 from pathlib import Path
 
 import streamlit as st
