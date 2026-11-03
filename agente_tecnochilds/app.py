@@ -1,13 +1,10 @@
 import uuid
-from config.settings import GEMINI_API_KEY, GEMINI_MODEL
-st.sidebar.write("Largo clave:", len(GEMINI_API_KEY))
-st.sidebar.write("Empieza con AIza:", GEMINI_API_KEY.startswith("AIza"))
-st.sidebar.write("Modelo:", GEMINI_MODEL)
 from pathlib import Path
 
 import streamlit as st
 from langchain_core.messages import HumanMessage
 
+from config.settings import GEMINI_API_KEY, GEMINI_MODEL
 from core.agent import app_vocacional
 from core.errores import clasificar_error_modelo
 from core.graph import extraer_texto_respuesta, generar_respuesta_api
@@ -22,6 +19,12 @@ st.set_page_config(
     page_icon="🎓",
     layout="centered",
 )
+
+# --- DIAGNOSTICO TEMPORAL (borrar despues de probar) ---
+st.sidebar.write("Largo clave:", len(GEMINI_API_KEY or ""))
+st.sidebar.write("Empieza con AIza:", (GEMINI_API_KEY or "").startswith("AIza"))
+st.sidebar.write("Modelo:", GEMINI_MODEL)
+# --------------------------------------------------------
 
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = str(uuid.uuid4())
