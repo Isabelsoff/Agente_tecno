@@ -5,27 +5,34 @@ rootdir: C:\Users\ASUS\OneDrive\Documentos\GitHub\Agente_tecno\agente_tecnochild
 configfile: pytest.ini
 testpaths: tests
 plugins: anyio-4.14.2, langsmith-0.14.1
-collecting ... collected 20 items
+collecting ... collected 27 items
 
-tests/test_errores.py::test_clasificacion_y_registro_de_errores[429 RESOURCE_EXHAUSTED-429] PASSED [  5%]
-tests/test_errores.py::test_clasificacion_y_registro_de_errores[504 DEADLINE_EXCEEDED-504] PASSED [ 10%]
-tests/test_esquema.py::test_esquema_valido_normaliza_a_claves_fijas PASSED [ 15%]
-tests/test_esquema.py::test_resumen_incompleto_rellena_claves_y_datos_requeridos_fallan PASSED [ 20%]
-tests/test_grafo.py::test_grafo_recorrido_agente_herramientas_agente PASSED [ 25%]
-tests/test_integracion_real.py::test_integracion_real_gemini_solo_con_opt_in_explicito SKIPPED [ 30%]
-tests/test_memoria.py::test_memoria_conserva_mensajes_por_thread_y_separa_threads PASSED [ 35%]
-tests/test_metricas.py::test_callback_cuenta_llamadas_tokens_herramientas_errores_y_jsonl PASSED [ 40%]
-tests/test_modelo_lazy.py::test_importar_grafo_no_requiere_api_key PASSED [ 45%]
-tests/test_rutas.py::test_decidir_ruta_para_ruta_conceptual_herramientas_y_none PASSED [ 50%]
-tests/test_rutas.py::test_evaluar_herramientas_con_y_sin_tool_calls PASSED [ 55%]
-tests/test_rutas.py::test_start_tiene_arista_condicional_hacia_agente_y_enrutador PASSED [ 60%]
-tests/test_texto.py::test_bloques_de_texto_separados_por_espacio PASSED  [ 65%]
-tests/test_texto.py::test_string_simple_se_conserva PASSED               [ 70%]
-tests/test_tool.py::test_perfiles_validos_coinciden_con_json[cientifico_tecnologico-cientifico_tecnologico] PASSED [ 75%]
-tests/test_tool.py::test_perfiles_validos_coinciden_con_json[artistico_creativo-artistico_creativo] PASSED [ 80%]
-tests/test_tool.py::test_perfiles_validos_coinciden_con_json[social_humanistico-social_humanistico] PASSED [ 85%]
-tests/test_tool.py::test_perfiles_validos_coinciden_con_json[practico_tecnico-practico_tecnico] PASSED [ 90%]
-tests/test_tool.py::test_perfil_invalido_y_vacio_devuelven_json[perfil inexistente] PASSED [ 95%]
+tests/test_errores.py::test_clasificacion_y_registro_de_errores[429 RESOURCE_EXHAUSTED-429] PASSED [  3%]
+tests/test_errores.py::test_clasificacion_y_registro_de_errores[504 DEADLINE_EXCEEDED-504] PASSED [  7%]
+tests/test_esquema.py::test_esquema_valido_normaliza_a_claves_fijas PASSED [ 11%]
+tests/test_esquema.py::test_resumen_incompleto_rellena_claves_y_datos_requeridos_fallan PASSED [ 14%]
+tests/test_grafo.py::test_grafo_recorrido_agente_herramientas_agente PASSED [ 18%]
+tests/test_integracion_real.py::test_integracion_real_gemini_solo_con_opt_in_explicito SKIPPED [ 22%]
+tests/test_memoria.py::test_memoria_conserva_mensajes_por_thread_y_separa_threads PASSED [ 25%]
+tests/test_metricas.py::test_callback_cuenta_llamadas_tokens_herramientas_errores_y_jsonl PASSED [ 29%]
+tests/test_modelo_lazy.py::test_importar_grafo_no_requiere_api_key PASSED [ 33%]
+tests/test_rag.py::test_construir_y_cargar_indice_con_archivos_temporales PASSED [ 37%]
+tests/test_rag.py::test_recuperar_devuelve_cinco_resultados_con_puntaje PASSED [ 40%]
+tests/test_rag.py::test_tool_con_indice_presente_devuelve_datos_citados PASSED [ 44%]
+tests/test_rag.py::test_tool_sin_indice_y_consulta_vacia_no_lanza PASSED [ 48%]
+tests/test_rag.py::test_datos_jsonl_son_validos_y_perfiles_permitidos PASSED [ 51%]
+tests/test_rag.py::test_agente_simulado_invoca_tool_rag_y_metricas_la_registran PASSED [ 55%]
+tests/test_rag.py::test_prompts_definen_relevancia_y_respaldo_no_verificado PASSED [ 59%]
+tests/test_rutas.py::test_decidir_ruta_para_ruta_conceptual_herramientas_y_none PASSED [ 62%]
+tests/test_rutas.py::test_evaluar_herramientas_con_y_sin_tool_calls PASSED [ 66%]
+tests/test_rutas.py::test_start_tiene_arista_condicional_hacia_agente_y_enrutador PASSED [ 70%]
+tests/test_texto.py::test_bloques_de_texto_separados_por_espacio PASSED  [ 74%]
+tests/test_texto.py::test_string_simple_se_conserva PASSED               [ 77%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[cientifico_tecnologico-cientifico_tecnologico] PASSED [ 81%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[artistico_creativo-artistico_creativo] PASSED [ 85%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[social_humanistico-social_humanistico] PASSED [ 88%]
+tests/test_tool.py::test_perfiles_validos_coinciden_con_json[practico_tecnico-practico_tecnico] PASSED [ 92%]
+tests/test_tool.py::test_perfil_invalido_y_vacio_devuelven_json[perfil inexistente] PASSED [ 96%]
 tests/test_tool.py::test_perfil_invalido_y_vacio_devuelven_json[] PASSED [100%]
 
 ============================== warnings summary ===============================
@@ -47,4 +54,4 @@ tests/test_tool.py::test_perfil_invalido_y_vacio_devuelven_json[] PASSED [100%]
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 =========================== short test summary info ===========================
 SKIPPED [1] tests\test_integracion_real.py:8: La integración real requiere RUN_LIVE=1 y consume cuota de Gemini.
-================= 19 passed, 1 skipped, 15 warnings in 2.31s ==================
+================= 26 passed, 1 skipped, 15 warnings in 2.67s ==================

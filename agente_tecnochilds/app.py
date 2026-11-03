@@ -1,4 +1,5 @@
 import uuid
+from pathlib import Path
 
 import streamlit as st
 from langchain_core.messages import HumanMessage
@@ -7,6 +8,10 @@ from core.agent import app_vocacional
 from core.errores import clasificar_error_modelo
 from core.graph import extraer_texto_respuesta, generar_respuesta_api
 from core.metrics import MetricasCallback, ultima_metrica
+
+# Ruta base del proyecto: funciona igual en Windows y en Streamlit Cloud (Linux)
+BASE_DIR = Path(__file__).resolve().parent
+RUTA_LOGO = BASE_DIR / "tecnoimg.png"
 
 st.set_page_config(
     page_title="TecnoChilds - Agente Vocacional",
@@ -83,7 +88,9 @@ renderizar_metricas_sidebar()
 
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
-    st.image("tecnoimg.png", width=220)
+    # Si la imagen no existe en el servidor, la app sigue funcionando sin logo
+    if RUTA_LOGO.exists():
+        st.image(str(RUTA_LOGO), width=220)
 
 st.title("🎓 Agente de Orientación Vocacional")
 st.markdown(

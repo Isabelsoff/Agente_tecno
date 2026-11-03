@@ -17,15 +17,23 @@ class FakeStructuredModel:
 
 
 class FakeToolBoundModel:
+    def __init__(self, tool_name: str) -> None:
+        self.tool_name = tool_name
+
     def invoke(self, messages: list[Any]) -> AIMessage:
         if any(isinstance(message, ToolMessage) for message in messages):
             return AIMessage(content="Respuesta final simulada con datos de herramienta.")
+        consulta = (
+            "programas universitarios"
+            if self.tool_name == "buscar_programas_academicos"
+            else "practico_tecnico"
+        )
         return AIMessage(
             content="",
             tool_calls=[
                 {
-                    "name": "consultar_perfil_vocacional",
-                    "args": {"consulta": "practico_tecnico"},
+                    "name": self.tool_name,
+                    "args": {"consulta": consulta},
                     "id": "test-call-1",
                     "type": "tool_call",
                 }
@@ -34,11 +42,14 @@ class FakeToolBoundModel:
 
 
 class FakeChatModel:
+    def __init__(self) -> None:
+        self.tool_name = "consultar_perfil_vocacional"
+
     def with_structured_output(self, schema: type[Any]) -> FakeStructuredModel:
         return FakeStructuredModel(schema)
 
     def bind_tools(self, tools: list[Any]) -> FakeToolBoundModel:
-        return FakeToolBoundModel()
+        return FakeToolBoundModel(self.tool_name)
 
     def invoke(self, messages: list[Any]) -> AIMessage:
         return AIMessage(content="Respuesta conceptual simulada.")

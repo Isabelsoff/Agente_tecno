@@ -9,6 +9,14 @@ from config.settings import GEMINI_MODEL, GEMINI_API_KEY
 from core.state import VocacionalState
 from prompts.vocacional_prompt import ROUTER_SYSTEM_PROMPT, CONCEPTUAL_SYSTEM_PROMPT, AGENT_SYSTEM_TEMPLATE
 from tools.carreras_tool import consultar_perfil_vocacional
+from tools.programas_tool import buscar_programas_academicos
+from tools.web_tool import buscar_programas_web   # NUEVO
+
+TOOLS_VOCACIONALES = [
+    consultar_perfil_vocacional,
+    buscar_programas_academicos,
+    buscar_programas_web,                          # NUEVO
+]
 
 # --- NUEVO IMPORT PARA EL JSON ---
 from core.schemas import OrientacionResponse
@@ -82,7 +90,7 @@ def conceptual_node(state: VocacionalState) -> dict:
     }
 
 # Nodo 3: Razonamiento usando la herramienta de carreras
-TOOLS_VOCACIONALES = [consultar_perfil_vocacional]
+TOOLS_VOCACIONALES = [consultar_perfil_vocacional, buscar_programas_academicos]
 
 def agente_vocacional_node(state: VocacionalState) -> dict:
     modelo_con_tools = obtener_modelo().bind_tools(TOOLS_VOCACIONALES)

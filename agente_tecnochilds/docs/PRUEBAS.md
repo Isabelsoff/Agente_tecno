@@ -15,13 +15,16 @@ Se ejecutó `python -m pytest -v` con modelo simulado, `RUN_LIVE` desactivado y
 | T07 | Esquema de respuesta | Rechazar campos requeridos incompletos y fijar las cuatro claves del resumen | 2 pruebas pasaron; claves exactas `Científico`, `Artístico`, `Social`, `Práctico` | PASÓ | Antes se aceptaban diccionarios con claves variables | Validador normaliza las claves y Streamlit rellena los puntajes reales |
 | T08 | Texto multimodal de Gemini | Separar bloques de texto sin concatenar palabras | 2 pruebas pasaron para bloques y string simple | PASÓ | El extractor concatenaba con `""` (por ejemplo, `práctico` + `te`) | Unir bloques con espacios |
 | T09 | Integración real opcional | Solo llamar a Gemini con `RUN_LIVE=1` | Saltada; la variable no estaba habilitada y no se usó clave | OMITIDA (intencional) | Prueba real consumiría cuota | Mantener desactivada para las corridas ordinarias |
-| T10 | Importación de grafo sin credenciales | Importar módulos y usar modelo simulado sin exigir API key | 1 prueba pasó; sin clave, la instancia real solo se solicita al usar el modelo | PASÓ | La inicialización global impedía recolectar tests sin credenciales | Inicializar Gemini de forma perezosa y fallar claramente solo ante una llamada real |
+| T10 | Importación de grafo sin credenciales | Importar módulos y usar modelo simulado sin exigir API key | La prueba de inicialización diferida pasó en la suite anterior | PASÓ | La inicialización global impedía recolectar tests sin credenciales | Inicializar Gemini de forma perezosa y fallar claramente solo ante una llamada real |
+| T11 | Índice RAG y recuperación top-5 | Construir/cargar índice temporal y devolver cinco documentos con metadata y score | 3 pruebas con `DeterministicFakeEmbedding` verifican construcción/carga, top-5 y campos de cita | PASÓ | La búsqueda anterior usaba k=3 por defecto | Usar k=5 sin descartar por umbral fijo |
+| T12 | Tool RAG: datos, índice ausente y consulta vacía | Devolver programa e institución en JSON y mensajes claros para ausencia de índice o consulta vacía | 2 pruebas usan índice temporal; ausencia y consulta vacía devuelven JSON válido | PASÓ | Ninguno pendiente | Preservar campos citables y errores de búsqueda claros |
+| T13 | Política híbrida en prompts | Exigir coincidencia de carrera, fuente para resultados verificados y respaldo rotulado no verificado | Prueba inspecciona frases clave en ambos prompts | PASÓ | El agente se negaba a responder sobre carreras fuera del índice | Respaldo transparente rotulado como información no verificada |
+| T14 | Tool RAG en grafo y métricas | El agente simulado llama a `buscar_programas_academicos` y métricas registran su nombre | 1 prueba pasó con llamada de herramienta simulada | PASÓ | La búsqueda universitaria no tenía recuperación con fuentes | Registrar la herramienta RAG junto a la tool vocacional existente |
+| T15 | Integridad de los datos RAG | Cada línea es JSON, contiene los campos requeridos, ID único y perfil permitido | 1 prueba pasó; el archivo conserva 25 líneas válidas y no fue modificado | PASÓ | Ninguno pendiente | Mantener validación automática para cambios de datos |
 
-**Resultado total:** 19 pasaron, 1 omitida, 0 fallaron en la suite final.
-La salida inicial tuvo un fallo real en T01; después del arreglo, la suite se
-ejecutó otra vez y pasó. Una ejecución intermedia detectó además que la
-instanciación global de Gemini exigía credenciales durante la colección; se
-aplicó inicialización perezosa y quedó cubierta por T10.
+**Resultado de la suite completa:** 26 pasaron, 1 omitida, 0 fallaron.
+La salida completa está guardada en
+[docs/evidencias/pytest_salida.txt](evidencias/pytest_salida.txt).
 
 ## Hallazgos y correcciones
 
@@ -47,7 +50,22 @@ aplicó inicialización perezosa y quedó cubierta por T10.
   desde conocimiento general como si fuera información actual. Se ajustó el
   prompt conceptual para indicar que la información universitaria debe
   verificarse en el sitio oficial y no inventar detalles. No se probó una
-  respuesta live ni se añadieron herramientas de navegación.
+  respuesta live ni se añadieron herramientas de navegación. Hallazgo:
+  **universidades inventadas -> RAG con fuentes verificables**; la nueva
+  herramienta cita los registros disponibles y advierte sobre estado o vigencia.
+- **El agente se negaba a responder sobre carreras fuera del índice:** acción:
+  **respaldo transparente rotulado como información no verificada**. El modelo
+  debe filtrar resultados de otras carreras y, cuando no haya resultados
+  relevantes, limitarse a instituciones muy conocidas de la ciudad y declarar
+  explícitamente que la información no está verificada; los detalles específicos
+  quedan prohibidos en ese modo.
+
+## RAG: fuente de datos
+
+`data/conocimiento/programas.jsonl` ya existía y se dejó intacto. Su contenido
+se valida con T13 y no se vuelca en el informe. La reconstrucción del índice
+requiere ejecutar manualmente `python scripts/construir_indice.py`, que usa
+embeddings remotos y por eso no se ejecuta durante las pruebas.
 
 ## Métricas
 
